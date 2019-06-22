@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{%  if doc_index|length == 0 %}
+  <p>No documents loaded! Try loading one  <a href="../document_upload">Here</a></p>
+{% else %}
+    {% for doc in doc_index %}
+        <a href="/{{ doc }}">{{ doc }}</a>
+    {% endfor %}
+{% endif %}
+</body>
+</html>
