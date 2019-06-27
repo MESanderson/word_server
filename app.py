@@ -3,6 +3,7 @@ from flask.templating import render_template
 from db import init as db_init
 from werkzeug.utils import secure_filename
 import os
+import datetime
 
 UPLOAD_FOLDER = r'/home/mike/PycharmProjects/word_server/temp_docs'
 ALLOWED_EXTENSIONS = {'.txt', }
@@ -17,6 +18,10 @@ config_obj = {
 }
 
 db = db_init(config_obj)
+
+
+def format_epoch_time(epoch_time):
+    return datetime.datetime.fromtimestamp(epoch_time).isoformat()
 
 
 def store_document(file):
@@ -41,8 +46,13 @@ def hello_world():
 
 @app.route('/document_index')
 def doc_index():
-    doc_index = []
-    return render_template('document_index.html', doc_index=doc_index)
+    doc_data_raw = db.list_docs(config_obj)
+    doc_data_dicts = [{
+        'doc_id': r['doc_hash'],
+        'doc_name': r['doc_name'],
+        'update_time': format_epoch_time(r['update_epoch_time'])
+    } for r in doc_data_raw]
+    return render_template('document_index.html', doc_index=doc_data_dicts)
 
 
 @app.route('/document_upload', methods=('GET', 'POST'))
@@ -66,9 +76,20 @@ def doc_upload():
             return redirect('/document_upload')
 
 
-@app.route('/<document_name>')
-def document_page(document_name):
-    return redirect('/document_index')
+@app.route('/documents/<doc_id>')
+def document_page(doc_id):
+    doc_data_raw = db.get_doc(config_obj, doc_id)
+    if doc_data_raw is None:
+        flash('No document with that id')
+        return redirect('/document_index')
+
+    else:
+        doc_data = {
+            "doc_body": doc_data_raw['doc_body'].decode('utf-8'),
+            "doc_update_time": format_epoch_time(doc_data_raw["update_epoch_time"]),
+            "doc_name": doc_data_raw["doc_name"]
+        }
+        return render_template('document_details.html', doc_data=doc_data)
 
 
 if __name__ == '__main__':

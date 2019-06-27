@@ -5,12 +5,15 @@
     <title>Title</title>
 </head>
 <body>
+<h2>Document Index</h2>
 {%  if doc_index|length == 0 %}
   <p>No documents loaded! Try loading one  <a href="../document_upload">Here</a></p>
 {% else %}
+    <ul>
     {% for doc in doc_index %}
-        <a href="/{{ doc }}">{{ doc }}</a>
+        <li><span><a href="/documents/{{ doc.doc_id }}">{{ doc.doc_name }}</a> <p display="inline-block">Updated at {{ doc.update_time }}</p></span></li>
     {% endfor %}
+    </ul>
 {% endif %}
 </body>
 </html>

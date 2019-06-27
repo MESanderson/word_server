@@ -5,7 +5,9 @@ import time
 
 
 def _get_conn(config):
-    return sqlite3.connect(config['db_host'])
+    conn = sqlite3.connect(config['db_host'])
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
 def add_document(file_path, config):
@@ -14,7 +16,7 @@ def add_document(file_path, config):
         doc_text = fi.read()
         m.update(doc_text)
 
-    doc_hash = m.digest()
+    doc_hash = m.digest().hex()
     doc_name = os.path.split(file_path)[1]
 
     conn = _get_conn(config)
@@ -28,8 +30,35 @@ def add_document(file_path, config):
         else:
             print(e)
             raise e
+            conn.close()
 
     conn.commit()
+
+    conn.close()
+
+def list_docs(config):
+    conn = _get_conn(config)
+    curs = conn.cursor()
+
+    curs.execute('''
+    Select doc_name, doc_hash, update_epoch_time from raw_documents;
+    ''')
+
+    data = curs.fetchall()
+    conn.close()
+    return data
+
+def get_doc(config, doc_id):
+    conn = _get_conn(config)
+    curs = conn.cursor()
+
+    curs.execute('''
+    Select * from raw_documents where doc_hash = (?);
+    ''', (doc_id,))
+
+    data = curs.fetchone()
+    conn.close()
+    return data
 
 
 def init(config):
@@ -44,4 +73,4 @@ def init(config):
     #curs.execute('Create unique index words_pk on words(doc_hash, word);')
 
     conn.commit()
-
+    conn.close()
