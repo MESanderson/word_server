@@ -5,7 +5,11 @@ from werkzeug.utils import secure_filename
 import os
 import datetime
 
+
 UPLOAD_FOLDER = r'/home/mike/PycharmProjects/word_server/temp_docs'
+if not os.path.isdir(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 ALLOWED_EXTENSIONS = {'.txt', }
 
 app = Flask(__name__)
