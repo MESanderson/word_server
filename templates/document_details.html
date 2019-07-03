@@ -8,6 +8,10 @@
 <h2>Details page for {{ doc_data.doc_name }}</h2>
 <p>Document Name: {{ doc_data.doc_name }}</p>
 <p>Last Updated: {{ doc_data.update_time }}</p>
+<h4>Word Processing</h4>
+<ul>
+    <li><form method="POST" action="/api/documents/{{ doc_data.doc_id }}/process_words"><input type="submit"> Process Words</form></li>
+</ul>
 <p><b>Document Text</b></p>
 <p>{{ doc_data.doc_body}}</p>
 </body>

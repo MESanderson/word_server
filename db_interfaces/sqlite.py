@@ -61,6 +61,10 @@ def get_doc(config, doc_id):
     return data
 
 
+def update_doc_word_list(config, word_list):
+    print("i'll get to it")
+
+
 def init(config):
     conn = _get_conn(config)
     curs = conn.cursor()

@@ -1,6 +1,7 @@
-from flask import Flask, request, flash, redirect
+from flask import Flask, request, flash, redirect, jsonify
 from flask.templating import render_template
 from db import init as db_init
+from basic_word_processing import create_word_list_from_doc
 from werkzeug.utils import secure_filename
 import os
 import datetime
@@ -41,6 +42,14 @@ def store_document(file):
     db.add_document(uploaded_file, config_obj)
 
     return True, "File Successfully Uploaded"
+
+
+def process_document_words(doc_hash):
+    doc = db.get_doc(config_obj, doc_hash)
+    doc_text = doc['doc_body'].decode('utf-8')
+    word_list = create_word_list_from_doc(doc_text)
+    db.update_doc_word_list(config_obj, word_list)
+    return word_list
 
 
 @app.route('/')
@@ -91,9 +100,17 @@ def document_page(doc_id):
         doc_data = {
             "doc_body": doc_data_raw['doc_body'].decode('utf-8'),
             "doc_update_time": format_epoch_time(doc_data_raw["update_epoch_time"]),
-            "doc_name": doc_data_raw["doc_name"]
+            "doc_name": doc_data_raw["doc_name"],
+            "doc_id": doc_id
         }
         return render_template('document_details.html', doc_data=doc_data)
+
+
+@app.route('/api/documents/<doc_id>/process_words', methods=["POST"])
+def process_document_words_api(doc_id):
+    word_list = process_document_words(doc_id)
+
+    return jsonify(word_list)
 
 
 if __name__ == '__main__':
